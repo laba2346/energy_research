@@ -2,8 +2,8 @@ from config import *
 
 def main():
     load, price = simulate()
-    print(load)
-    print(price)
+    for item in load:
+        print(item)
 
 # This equation was derived from a sample data set spanning 24 hours, with an
 # hour between data points. Adjusted to allow for values of t that represent
@@ -18,16 +18,24 @@ def simulate():
     act_price = []
     for t in range(0, 96):
         pred_load = calc_pred_load(t)
-        pred_price = (2.2/16)*a*pred_load + b/4
-        total_load = 0
-        for j in range(0, 5):
-            d = coefficients[j]
-            if(t > 0):
-                total_load += d*(act_price[t-1] - pred_price) + pred_load
-            else:
-                total_load += pred_load
-        act_load.append(total_load)
-        act_price.append((2.2/16)*a*total_load + b/4)
+        pred_price = (2.2)*a*pred_load + b
+
+        # If we are beyond the first time step and have data for act_price,
+        # we can calculate the actual load of the system
+        if(t > 0):
+            total_load = pred_load
+            for j in range(0, 5):
+                d = coefficients[j]
+                total_load += d*(act_price[t-1] - pred_price)
+            act_load.append(total_load)
+            act_price.append((2.2)*a*total_load + b)
+
+        # If we are at the first time step, simply set the load and price to the
+        # predicted values
+        else:
+            act_load.append(pred_load)
+            act_price.append(pred_price)
+
 
     return act_load, act_price
 
