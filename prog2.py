@@ -1,8 +1,9 @@
 from config import *
 
 def main():
-    x, y = simulate()
-    print(y)
+    load, price = simulate()
+    print(load)
+    print(price)
 
 # This equation was derived from a sample data set spanning 24 hours, with an
 # hour between data points. Adjusted to allow for values of t that represent
