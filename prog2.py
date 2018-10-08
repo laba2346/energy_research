@@ -1,10 +1,14 @@
 from config import *
 import random
+import matplotlib.pyplot as plt
 
 def main():
     load, price = simulate()
-    for item in load:
-        print(item)
+    plt.plot(load)
+    plt.xlabel("time")
+    plt.ylabel("load")
+    plt.show()
+
 
 # This equation was derived from a sample data set spanning 24 hours, with an
 # hour between data points. Adjusted to allow for values of t that represent
@@ -12,7 +16,9 @@ def main():
 def calc_pred_load(t, act_load):
     #return (2.2/16)*t**2 + (73/4)*t + (1188/4)
     if(t > 0):
-        return act_load[t-1] + random.randint(-100, 100)
+        wind = random.randint(-100, 100)
+        print(wind)
+        return act_load[t-1] + wind
     else:
         return 500
 
@@ -28,10 +34,11 @@ def simulate():
         # If we are beyond the first time step and have data for act_price,
         # we can calculate the actual load of the system
         if(t > 0):
-            total_load = pred_load
+            total_load = 0
             for j in range(0, 5):
                 d = coefficients[j]
-                total_load += d*(act_price[t-1] - pred_price)
+                total_load += d*(act_price[t-1] - pred_price) + pred_load/5
+            total_load = max(0, total_load)
             act_load.append(total_load)
             act_price.append((2.2)*a*total_load + b)
 
@@ -40,7 +47,6 @@ def simulate():
         else:
             act_load.append(pred_load)
             act_price.append(pred_price)
-
 
     return act_load, act_price
 
