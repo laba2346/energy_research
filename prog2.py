@@ -16,11 +16,24 @@ def main():
 def calc_pred_load(t, act_load):
     #return (2.2/16)*t**2 + (73/4)*t + (1188/4)
     if(t > 0):
-        wind = random.randint(-100, 100)
-        print(wind)
+        wind = random.randint(0 , 100)
         return act_load[t-1] + wind
     else:
         return 500
+
+# If higher than the max load, set load to the max load
+# If lower than the min load, set load to the min load
+# If between min and max, return the load as is
+def bound(load, pred_load):
+    min = .66*pred_load/5
+    max = 1.33*pred_load/5
+
+    if(load < min):
+        load = min
+    elif(load > max):
+        load = max
+
+    return load
 
 def simulate():
     # Keep track of actual price and load of the system over a 24 hour period,
@@ -30,15 +43,14 @@ def simulate():
     for t in range(0, 96):
         pred_load = calc_pred_load(t, act_load)
         pred_price = (2.2)*a*pred_load + b
-
         # If we are beyond the first time step and have data for act_price,
         # we can calculate the actual load of the system
         if(t > 0):
             total_load = 0
             for j in range(0, 5):
                 d = coefficients[j]
-                total_load += d*(act_price[t-1] - pred_price) + pred_load/5
-            total_load = max(0, total_load)
+                user_load = d*(act_price[t-1] - pred_price) + pred_load/5
+                total_load += bound(user_load, pred_load)
             act_load.append(total_load)
             act_price.append((2.2)*a*total_load + b)
 
