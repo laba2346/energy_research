@@ -27,7 +27,7 @@ def calc_pred_load(t, act_load):
 # If lower than the min load, set load to the min load
 # If between min and max, return the load as is
 def bound(load, pred_load):
-    min = .66*pred_load/5
+    min = .60*pred_load/5
     max = 1.33*pred_load/5
 
     if(load < min):
