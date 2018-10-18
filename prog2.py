@@ -4,7 +4,9 @@ import matplotlib.pyplot as plt
 
 def main():
     load, price = simulate()
-    plt.plot(load)
+    modifiedLoad = [load+random.randint(0,50) for load in loadData]
+    plt.plot(loadData)
+    plt.plot(modifiedLoad)
     plt.xlabel("time")
     plt.ylabel("load")
     plt.show()
