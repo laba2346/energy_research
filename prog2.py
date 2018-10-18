@@ -5,23 +5,25 @@ import matplotlib.pyplot as plt
 def main():
     load, price = simulate()
     modifiedLoad = [load+random.randint(0,50) for load in loadData]
-    plt.plot(loadData)
-    plt.plot(modifiedLoad)
+    plt.plot(loadData, label="Predicted Load w/out wind")
+    plt.plot(modifiedLoad, label="Predicted Load w/ wind")
+    plt.plot(load, label="Actual Load")
     plt.xlabel("time")
     plt.ylabel("load")
+    plt.legend(loc='upper left')
     plt.show()
 
 
 # This equation was derived from a sample data set spanning 24 hours, with an
 # hour between data points. Adjusted to allow for values of t that represent
 # 15 minute intervals.
-def calc_pred_load(t, act_load):
+def calc_pred_load(t):
     #return (2.2/16)*t**2 + (73/4)*t + (1188/4)
     if(t > 0):
         wind = random.randint(0 , 100)
-        return act_load[t-1] + wind
+        return loadData[t] + wind
     else:
-        return 500
+        return 400
 
 # If higher than the max load, set load to the max load
 # If lower than the min load, set load to the min load
@@ -43,7 +45,7 @@ def simulate():
     act_load = []
     act_price = []
     for t in range(0, 96):
-        pred_load = calc_pred_load(t, act_load)
+        pred_load = calc_pred_load(t)
         pred_price = (2.2)*a*pred_load + b
         # If we are beyond the first time step and have data for act_price,
         # we can calculate the actual load of the system
