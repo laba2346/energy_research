@@ -46,12 +46,8 @@ def main():
 # hour between data points. Adjusted to allow for values of t that represent
 # 15 minute intervals.
 def calc_pred_load(t):
-    #return (2.2/16)*t**2 + (73/4)*t + (1188/4)
-    if(t > 0):
-        wind = random.randint(-50, 50)
-        return loadData[t] + wind
-    else:
-        return 400
+    return loadData[t]
+
 
 # If higher than the max load, set load to the max load
 # If lower than the min load, set load to the min load
@@ -82,7 +78,8 @@ def simulate():
             total_load = 0
             for j in range(0, 5):
                 d = coefficients[j]
-                user_load = pred_load/5 + d*(pred_price-.03)
+                user_pred_load = pred_load/5
+                user_load = user_pred_load - d*user_pred_load*(pred_price-3)
                 total_load += bound(user_load, pred_load)
             act_load.append(total_load)
             act_price.append((2*a*total_load + b)/4000)
