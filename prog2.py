@@ -104,7 +104,7 @@ def simulate():
             wind = random.randint(-50,50)
             act_gen.append(pred_load + wind)
             act_load.append(total_load)
-            act_price.append((2*a*(pred_load + wind) + b)/4000)
+            act_price.append((2*a*(total_load - wind) + b)/4000)
 
 #actual load, predicted price
 
