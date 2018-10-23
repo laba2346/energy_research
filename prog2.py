@@ -102,10 +102,9 @@ def simulate():
                 total_load += bound(user_load, pred_load)
             # Wind is added here as a disturbance
             wind = random.randint(-50,50)
-            net_load = total_load + wind
-            act_gen.append(net_load)
+            act_gen.append(pred_load + wind)
             act_load.append(total_load)
-            act_price.append((2*a*net_load + b)/4000)
+            act_price.append((2*a*(pred_load + wind) + b)/4000)
 
 #actual load, predicted price
 
