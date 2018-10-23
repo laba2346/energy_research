@@ -2,9 +2,10 @@ from config import *
 import random
 import matplotlib.pyplot as plt
 import numpy as np
+import operator
 
 def main():
-    load, price, pred_price = simulate()
+    load, price, pred_price, act_price, act_gen = simulate()
     t = np.arange(0, 96, 1)
     # fig, ax1 = plt.subplots()
     #
@@ -24,19 +25,32 @@ def main():
     # fig.tight_layout()  # otherwise the right y-label is slightly clipped
     # plt.show()
 
-    fig, (ax1, ax2) = plt.subplots(1,2)
+    fig, (ax1, ax2, ax3) = plt.subplots(1,3)
     color1 = 'tab:red'
     color2 = 'tab:green'
+    color3 = 'tab:blue'
+    color4 = 'tab:purple'
+
     ax1.set_xlabel('time (15 minute intervals)')
     ax1.set_ylabel('load')
     ax1.plot(t, load, color=color1, label='Actual Load')
-    ax1.plot(t, loadData, color=color2, label='Predicted Load')
+    ax1.plot(t, loadData, color=color3, label='Predicted Load')
+    ax1.plot(t, act_gen, color=color2, label='Generation')
     ax1.legend(loc="upper left")
 
     color = 'tab:blue'
-    ax2.set_xlabel('time (15 minute intervals')
-    ax2.set_ylabel('predicted_price')
-    ax2.plot(t, pred_price, color=color)
+    ax2.set_xlabel('time (15 minute intervals)')
+    ax2.set_ylabel('price')
+    #ax2.plot(t, pred_price, color=color)
+    ax2.plot(t, act_price, color=color1, label='Actual Price')
+    ax2.plot(t, pred_price, color=color3, label='Predicted Price')
+    ax2.legend(loc="upper left")
+
+    ax3.set_xlabel('time (15 minute intervals)')
+    ax3.set_ylabel('frequency (Hz)')
+    ax3.plot(t, 60 + 0.025*np.subtract(load, act_gen), color=color4)
+    ax3.legend(loc="upper left")
+
     plt.show()
 
 
@@ -53,8 +67,8 @@ def calc_pred_load(t):
 # If lower than the min load, set load to the min load
 # If between min and max, return the load as is
 def bound(load, pred_load):
-    min = .60*pred_load/5
-    max = 1.33*pred_load/5
+    min = .7*pred_load/5
+    max = 1.2*pred_load/5
 
     if(load < min):
         load = min
@@ -66,9 +80,13 @@ def bound(load, pred_load):
 def simulate():
     # Keep track of actual price and load of the system over a 24 hour period,
     # in 15 minute intervals.
-    act_load = []
-    act_price = []
+    act_load = [] # actual load consumed
+    act_price = [] # actual price (determined by marginal cost of generation)
+    act_gen = [] # actual generation
     pred_price_list = []
+    act_price_list = []
+    act_gen_list = []
+
     for t in range(0, 96):
         pred_load = calc_pred_load(t)
         pred_price = (2*a*pred_load + b)/4000
@@ -77,12 +95,17 @@ def simulate():
         if(t > 0):
             total_load = 0
             for j in range(0, 5):
-                d = coefficients[j]
+                d = coefficients[j] # price sensitivity per customer
+                e = p_coeffs[j]  # price centroid per customer
                 user_pred_load = pred_load/5
-                user_load = user_pred_load - d*user_pred_load*(pred_price-3)
+                user_load = user_pred_load - d*user_pred_load*(pred_price-e)
                 total_load += bound(user_load, pred_load)
+            # Wind is added here as a disturbance
+            wind = random.randint(-50,50)
+            net_load = total_load + wind
+            act_gen.append(net_load)
             act_load.append(total_load)
-            act_price.append((2*a*total_load + b)/4000)
+            act_price.append((2*a*net_load + b)/4000)
 
 #actual load, predicted price
 
@@ -91,9 +114,11 @@ def simulate():
         else:
             act_load.append(pred_load)
             act_price.append(pred_price)
+            act_gen.append(pred_load)
 
         pred_price_list.append(pred_price)
-    return act_load, act_price, pred_price_list
+        act_price_list.append(act_price)
+    return act_load, act_price, pred_price_list, act_price, act_gen
 
 if __name__ == "__main__":
     main()
