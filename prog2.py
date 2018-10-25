@@ -24,12 +24,16 @@ def main():
     #
     # fig.tight_layout()  # otherwise the right y-label is slightly clipped
     # plt.show()
-
-    fig, (ax1, ax2, ax3) = plt.subplots(1,3)
+    fig = plt.figure()
+    fig2 = plt.figure()
     color1 = 'tab:red'
     color2 = 'tab:green'
     color3 = 'tab:blue'
     color4 = 'tab:purple'
+
+    ax1 = fig.add_subplot(1,2,1)
+    ax2 = fig.add_subplot(1,2,2)
+    ax3 = fig2.add_subplot(1,1,1)
 
     ax1.set_xlabel('time (15 minute intervals)')
     ax1.set_ylabel('load')
@@ -51,6 +55,7 @@ def main():
     ax3.plot(t, 60 + 0.025*np.subtract(load, act_gen), color=color4)
     ax3.legend(loc="upper left")
 
+    fig.tight_layout()
     plt.show()
 
 
