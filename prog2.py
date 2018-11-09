@@ -93,16 +93,17 @@ def simulate():
     act_gen_list = []
 
     for t in range(0, 96):
-        pred_load = calc_pred_load(t)
+        pred_load = act_load[t-1] if t > 0 else calc_pred_load(t)
         pred_price = (2*a*pred_load + b)/4000
+        desired_load = calc_pred_load(t)
         # If we are beyond the first time step and have data for act_price,
         # we can calculate the actual load of the system
         if(t > 0):
             total_load = 0
             for j in range(0, 5):
-                d = coefficients[j] # price sensitivity per customer
-                e = p_coeffs[j]  # price centroid per customer
-                user_pred_load = pred_load/5
+                d = user_list[j].d # price sensitivity per customer
+                e = user_list[j].price_centroid  # price centroid per customer
+                user_pred_load = desired_load/5
                 user_load = user_pred_load - d*user_pred_load*(pred_price-e)
                 total_load += bound(user_load, pred_load)
             # Wind is added here as a disturbance
