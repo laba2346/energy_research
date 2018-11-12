@@ -2,12 +2,12 @@ from config import *
 import random
 import matplotlib.pyplot as plt
 import numpy as np
-import math
 import operator
 
 def main():
     load, price, pred_price, act_price, act_gen = simulate()
-    t = np.arange(0, 96, 1)
+    t = np.arange(0, 288, 1)
+    print(len(load_data))
     # fig, ax1 = plt.subplots()
     #
     # color = 'tab:red'
@@ -36,22 +36,22 @@ def main():
     ax2 = fig.add_subplot(1,2,2)
     ax3 = fig2.add_subplot(1,1,1)
 
-    ax1.set_xlabel('time (15 minute intervals)')
+    ax1.set_xlabel('time (5 minute intervals)')
     ax1.set_ylabel('load')
     ax1.plot(t, load, color=color1, label='Actual Load')
-    ax1.plot(t, loadData, color=color3, label='Predicted Load')
+    ax1.plot(t, load_data, color=color3, label='Predicted Load')
     ax1.plot(t, act_gen, color=color2, label='Generation')
     ax1.legend(loc="upper left")
 
     color = 'tab:blue'
-    ax2.set_xlabel('time (15 minute intervals)')
+    ax2.set_xlabel('time (5 minute intervals)')
     ax2.set_ylabel('price')
     #ax2.plot(t, pred_price, color=color)
     ax2.plot(t, act_price, color=color1, label='Actual Price')
     ax2.plot(t, pred_price, color=color3, label='Predicted Price')
     ax2.legend(loc="upper left")
 
-    ax3.set_xlabel('time (15 minute intervals)')
+    ax3.set_xlabel('time (5 minute intervals)')
     ax3.set_ylabel('frequency (Hz)')
     ax3.plot(t, 60 + 0.025*np.subtract(load, act_gen), color=color4)
     ax3.legend(loc="upper left")
@@ -66,7 +66,7 @@ def main():
 # hour between data points. Adjusted to allow for values of t that represent
 # 15 minute intervals.
 def calc_pred_load(t):
-    return loadData[t]
+    return load_data[t]
 
 
 # If higher than the max load, set load to the max load
@@ -93,7 +93,7 @@ def simulate():
     act_price_list = []
     act_gen_list = []
 
-    for t in range(0, 96):
+    for t in range(0, 288):
         pred_load = act_load[t-1] if t > 0 else calc_pred_load(t)
         pred_price = (2*a*pred_load + b)/4000
         desired_load = calc_pred_load(t)
@@ -110,7 +110,7 @@ def simulate():
                 user_load = user_pred_load - flag*d*user_pred_load*(pred_price-e)
 
                 total_load += bound(user_load, pred_load)
-                user.is_responding = math.abs(pred_price-e) > 1
+                user.is_responding = abs(pred_price-e) > 1
             # Wind is added here as a disturbance
             wind = random.randint(-50,50)
             act_gen.append(pred_load + wind)
