@@ -2,6 +2,7 @@ from config import *
 import random
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 import operator
 
 def main():
@@ -100,12 +101,16 @@ def simulate():
         # we can calculate the actual load of the system
         if(t > 0):
             total_load = 0
-            for j in range(0, 5):
-                d = user_list[j].d # price sensitivity per customer
-                e = user_list[j].price_centroid  # price centroid per customer
+            for user in user_list:
+                d = user.d # price sensitivity per customer
+                e = user.price_centroid  # price centroid per customer
+                flag = int(user.is_responding)
+
                 user_pred_load = desired_load/5
-                user_load = user_pred_load - d*user_pred_load*(pred_price-e)
+                user_load = user_pred_load - flag*d*user_pred_load*(pred_price-e)
+
                 total_load += bound(user_load, pred_load)
+                user.is_responding = math.abs(pred_price-e) > 1
             # Wind is added here as a disturbance
             wind = random.randint(-50,50)
             act_gen.append(pred_load + wind)
