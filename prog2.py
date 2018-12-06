@@ -7,7 +7,7 @@ from statistics import mean, variance
 
 def main():
     load, price, pred_price, act_price, act_gen = simulate()
-    t = np.arange(0, 288, 1)
+    t = np.arange(0, day_pts, 1)
 
     fig = plt.figure()
     fig2 = plt.figure()
@@ -23,16 +23,15 @@ def main():
     ax1.set_xlabel('time (5 minute intervals)')
     ax1.set_ylabel('load')
     ax1.plot(t, load, color=color1, label='Actual Load')
-    ax1.plot(t, load_data, color=color3, label='Predicted Load')
+    ax1.plot(t, load_data, color=color3, dashes=[6, 2], label='Predicted Load')
     #ax1.plot(t, act_gen, color=color2, label='Generation')
     ax1.legend(loc="upper left")
 
     color = 'tab:blue'
     ax2.set_xlabel('time (5 minute intervals)')
     ax2.set_ylabel('price')
-    ax2.plot(t, pred_price, color=color)
-    ax2.plot(t, act_price, color=color1, label='Actual Price')
-    ax2.plot(t, pred_price, color=color3, label='Predicted Price')
+    ax2.plot(t, act_price, color=color1, label='Actual Cost')
+    #ax2.plot(t, pred_price, color=color3, dashes=[6, 2], label='Predicted Price')
     ax2.legend(loc="upper left")
 
     ax3.set_xlabel('time (5 minute intervals)')
@@ -58,7 +57,7 @@ def calc_pred_load(t):
 # If between min and max, return the load as is
 def bound(load, pred_load):
     min = .7*pred_load/NUM_USERS
-    max = 1.2*pred_load/NUM_USERS
+    max = 1.3*pred_load/NUM_USERS
 
     if(load < min):
         load = min
@@ -79,7 +78,7 @@ def simulate():
     act_price_list = []
     act_gen_list = []
 
-    for t in range(0, 288):
+    for t in range(0, day_pts):
         pred_load = act_load[t-1] if t > 0 else calc_pred_load(t)
         pred_price = (2*a*pred_load + b)/4000
         desired_load = calc_pred_load(t)
@@ -92,7 +91,7 @@ def simulate():
                 # price centroid, flag indicates if they are currently responding
                 # to price
                 d,centroid_list = user.getUserInfo()
-                e = centroid_list[int(t/96)]
+                e = centroid_list[int(t/96)] # get which section of day we're in
                 user_pred_load = desired_load/NUM_USERS
 
                 if(user.is_responding):
@@ -100,7 +99,7 @@ def simulate():
                     if(user.finishedResponding()):
                         user.reset()
 
-                if(abs(pred_price-e) > 1 and not user.is_responding):
+                if(abs(pred_price-e) > 0.75 and not user.is_responding):
                     user.is_responding = True
                     user.saved_load = d*user_pred_load*(pred_price-e)
 
@@ -116,11 +115,9 @@ def simulate():
                 # next time step.
 
 
-
-
-
-            # Wind is added here as a disturbance
-            wind = random.randint(-50,50)
+            # Wind is added here as a disturbance. set to zero to ignore
+            #wind = random.randint(-50,50)
+            wind = 0
             act_gen.append(pred_load + wind)
             act_load.append(total_load)
             act_price.append((2*a*(total_load - wind) + b)/4000)
@@ -135,6 +132,7 @@ def simulate():
 
         pred_price_list.append(pred_price)
         act_price_list.append(act_price)
+
     return act_load, act_price, pred_price_list, act_price, act_gen
 
 if __name__ == "__main__":
