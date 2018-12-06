@@ -40,7 +40,7 @@ def main():
     ax1.set_ylabel('load')
     ax1.plot(t, load, color=color1, label='Actual Load')
     ax1.plot(t, load_data, color=color3, label='Predicted Load')
-    ax1.plot(t, act_gen, color=color2, label='Generation')
+    #ax1.plot(t, act_gen, color=color2, label='Generation')
     ax1.legend(loc="upper left")
 
     color = 'tab:blue'
@@ -83,6 +83,8 @@ def bound(load, pred_load):
 
     return load
 
+
+
 def simulate():
     # Keep track of actual price and load of the system over a 24 hour period,
     # in 15 minute intervals.
@@ -102,22 +104,43 @@ def simulate():
         if(t > 0):
             total_load = 0
             for user in user_list:
-                d = user.d # price sensitivity per customer
-                e = user.price_centroid  # price centroid per customer
-                flag = int(user.is_responding)
+                # d is the user's sensitivity to price fluctuations, e is
+                # price centroid, flag indicates if they are currently responding
+                # to price
+                d,e = user.getUserInfo()
 
                 user_pred_load = desired_load/5
-                user_load = user_pred_load - flag*d*user_pred_load*(pred_price-e)
+                
+                if(user.is_responding):
+                    user.increment()
+                    if(user.finishedResponding()):
+                        user.reset()
+                
+                if(abs(pred_price-e) > 1 and not user.is_responding):
+                    user.is_responding = True 
+                    user.saved_load = d*user_pred_load*(pred_price-e)
 
-                total_load += bound(user_load, pred_load)
-                user.is_responding = abs(pred_price-e) > 1
+                flag = abs(pred_price-e) > 0.5
+                user_load_t = user_pred_load - user.saved_load - flag*d*user_pred_load*(pred_price-e)/2
+
+                # Save the value at 119 right when the price warrants it, then user
+                # load will be this value for the next 2-4 timesteps
+                total_load += bound(user_load_t, pred_load)
+
+                # if the predicted price differs from the user's centroid by more
+                # than one dollar, the user will adjust his/her load for the
+                # next time step.
+                
+                
+ 
+
+
             # Wind is added here as a disturbance
             wind = random.randint(-50,50)
             act_gen.append(pred_load + wind)
             act_load.append(total_load)
             act_price.append((2*a*(total_load - wind) + b)/4000)
 
-#actual load, predicted price
 
         # If we are at the first time step, simply set the load and price to the
         # predicted values

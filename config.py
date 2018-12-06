@@ -1,19 +1,35 @@
 class User:
-    def __init__(self, d, price_centroid):
+    def __init__(self, d, price_centroid, num_active_steps):
         self.d = d
         self.price_centroid = price_centroid
         self.is_responding = False
+        self.num_active_steps = num_active_steps
+        self.active_count = 0
+        self.saved_load = 0
 
+    def getUserInfo(self):
+        return self.d, self.price_centroid
+
+    def finishedResponding(self):
+        return self.active_count == self.num_active_steps
+
+    def increment(self):
+        self.active_count += 1
+
+    def reset(self):
+        self.active_count = 0
+        self.is_responding = False 
+        self.user_saved_load = 0
 
 a = 10
 b = 73
 c = 1
 
-user1 = User(0, 3)
-user2 = User(3, 2.5)
-user3 = User(2, 4)
-user4 = User(0, 3.5)
-user5 = User(4, 2)
+user1 = User(0, 3, 2)
+user2 = User(3, 2.5, 3)
+user3 = User(2, 4, 3)
+user4 = User(0, 3.5, 2)
+user5 = User(4, 2, 1)
 user_list = [user1, user2, user3, user4, user5]
 
 coefficients = [0, 3, 2, 0, 4]
