@@ -107,17 +107,17 @@ def simulate():
                 # d is the user's sensitivity to price fluctuations, e is
                 # price centroid, flag indicates if they are currently responding
                 # to price
-                d,e = user.getUserInfo()
-
+                d_list,e = user.getUserInfo()
+                d = d_list[int(t/96)]
                 user_pred_load = desired_load/5
-                
+
                 if(user.is_responding):
                     user.increment()
                     if(user.finishedResponding()):
                         user.reset()
-                
+
                 if(abs(pred_price-e) > 1 and not user.is_responding):
-                    user.is_responding = True 
+                    user.is_responding = True
                     user.saved_load = d*user_pred_load*(pred_price-e)
 
                 flag = abs(pred_price-e) > 0.5
@@ -130,9 +130,9 @@ def simulate():
                 # if the predicted price differs from the user's centroid by more
                 # than one dollar, the user will adjust his/her load for the
                 # next time step.
-                
-                
- 
+
+
+
 
 
             # Wind is added here as a disturbance
