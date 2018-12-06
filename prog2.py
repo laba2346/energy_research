@@ -9,24 +9,6 @@ def main():
     load, price, pred_price, act_price, act_gen = simulate()
     t = np.arange(0, 288, 1)
 
-
-    # fig, ax1 = plt.subplots()
-    #
-    # color = 'tab:red'
-    # ax1.set_xlabel('time (15 minute intervals')
-    # ax1.set_ylabel('load', color=color)
-    # ax1.plot(t, np.asarray(load), color=color)
-    # ax1.tick_params(axis='y', labelcolor=color)
-    #
-    # ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
-    #
-    # color = 'tab:blue'
-    # ax2.set_ylabel('price', color=color)  # we already handled the x-label with ax1
-    # ax2.plot(t, np.asarray(price), color=color)
-    # ax2.tick_params(axis='y', labelcolor=color)
-    #
-    # fig.tight_layout()  # otherwise the right y-label is slightly clipped
-    # plt.show()
     fig = plt.figure()
     fig2 = plt.figure()
     color1 = 'tab:red'
@@ -41,7 +23,7 @@ def main():
     ax1.set_xlabel('time (5 minute intervals)')
     ax1.set_ylabel('load')
     ax1.plot(t, load, color=color1, label='Actual Load')
-    #ax1.plot(t, load_data, color=color3, label='Predicted Load')
+    ax1.plot(t, load_data, color=color3, label='Predicted Load')
     #ax1.plot(t, act_gen, color=color2, label='Generation')
     ax1.legend(loc="upper left")
 
@@ -75,8 +57,8 @@ def calc_pred_load(t):
 # If lower than the min load, set load to the min load
 # If between min and max, return the load as is
 def bound(load, pred_load):
-    min = .7*pred_load/5
-    max = 1.2*pred_load/5
+    min = .7*pred_load/NUM_USERS
+    max = 1.2*pred_load/NUM_USERS
 
     if(load < min):
         load = min
@@ -111,7 +93,7 @@ def simulate():
                 # to price
                 d,centroid_list = user.getUserInfo()
                 e = centroid_list[int(t/96)]
-                user_pred_load = desired_load/5
+                user_pred_load = desired_load/NUM_USERS
 
                 if(user.is_responding):
                     user.increment()
