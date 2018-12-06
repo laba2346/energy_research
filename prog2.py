@@ -3,11 +3,13 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 import operator
+from statistics import mean, variance
 
 def main():
     load, price, pred_price, act_price, act_gen = simulate()
     t = np.arange(0, 288, 1)
-    print(len(load_data))
+
+
     # fig, ax1 = plt.subplots()
     #
     # color = 'tab:red'
@@ -39,14 +41,14 @@ def main():
     ax1.set_xlabel('time (5 minute intervals)')
     ax1.set_ylabel('load')
     ax1.plot(t, load, color=color1, label='Actual Load')
-    ax1.plot(t, load_data, color=color3, label='Predicted Load')
+    #ax1.plot(t, load_data, color=color3, label='Predicted Load')
     #ax1.plot(t, act_gen, color=color2, label='Generation')
     ax1.legend(loc="upper left")
 
     color = 'tab:blue'
     ax2.set_xlabel('time (5 minute intervals)')
     ax2.set_ylabel('price')
-    #ax2.plot(t, pred_price, color=color)
+    ax2.plot(t, pred_price, color=color)
     ax2.plot(t, act_price, color=color1, label='Actual Price')
     ax2.plot(t, pred_price, color=color3, label='Predicted Price')
     ax2.legend(loc="upper left")
@@ -107,8 +109,8 @@ def simulate():
                 # d is the user's sensitivity to price fluctuations, e is
                 # price centroid, flag indicates if they are currently responding
                 # to price
-                d_list,e = user.getUserInfo()
-                d = d_list[int(t/96)]
+                d,centroid_list = user.getUserInfo()
+                e = centroid_list[int(t/96)]
                 user_pred_load = desired_load/5
 
                 if(user.is_responding):
