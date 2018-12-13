@@ -28,7 +28,7 @@ class User:
         self.is_responding = False
         self.user_saved_load = 0
 
-NUM_USERS = 100
+NUM_USERS = 120
 
 # coefficients for marginal cost
 a = 10
