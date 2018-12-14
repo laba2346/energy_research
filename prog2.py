@@ -111,7 +111,7 @@ def simulate():
                 # to price
                 d,centroid_list = user.getUserInfo()
                 e = centroid_list[int(t/96)]
-                user_pred_load = desired_load/5
+                user_pred_load = desired_load/len(user_list)
 
                 if(user.is_responding):
                     user.increment()
