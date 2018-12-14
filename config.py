@@ -1,4 +1,8 @@
 import numpy as np
+import math
+from random import randint
+import matplotlib.mlab as mlab
+from matplotlib import pyplot
 from statistics import mean, variance
 
 class User:
@@ -24,14 +28,18 @@ class User:
         self.is_responding = False
         self.user_saved_load = 0
 
-NUM_USERS = 5
+NUM_USERS = 120
 
+# coefficients for marginal cost
 a = 10
 b = 73
 c = 1
 
-coefficients = [0, 3, 2, 0, 4]
-centroids = [3, 2.5, 4, 3.5, 2]
+coefficients = [randint(0, 5) for p in range(0, NUM_USERS)]
+delays = [randint(1, 5) for p in range(0, NUM_USERS)]
+
+#coefficients = [0, 3, 2, 0, 4]
+#centroids = [3, 2.5, 4, 3.5, 2]
 load_data = [375.4349172,373.6722292,372.698344,370.9841298,370.1600733,367.9038327,366.5553763,365.3920022,363.7791427,
             362.3469587,361.2452787,359.6720797,357.6317683,355.6619645,353.8463958,353.039966,351.1406698,350.382714,
             349.3779817,348.9064627,348.3644362,348.1132532,347.7430887,347.2451293,347.4566518,346.8441178,346.1566693,
@@ -67,22 +75,69 @@ load_data = [375.4349172,373.6722292,372.698344,370.9841298,370.1600733,367.9038
 
 general_pred_price = [(2*a*load + b)/4000 for load in load_data]
 
+day_pts = 288 # number of points in one day (288 = 5 min simulation steps)
+
 mu_one = mean(general_pred_price[:96])
 mu_two = mean(general_pred_price[96:192])
 mu_three = mean(general_pred_price[192:])
 
-var_one = variance(general_pred_price[:96])
-var_two = variance(general_pred_price[96:192])
-var_three = variance(general_pred_price[192:])
+#var_one = variance(general_pred_price[:72])*5
+#var_two = variance(general_pred_price[72:208])*5
+#var_three = variance(general_pred_price[208:])*5
 
+var_one = 0.5;
+var_two = 0.5;
+var_three = 0.5;
 
 first_samples = np.random.normal(mu_one, var_one, NUM_USERS)
+print("-----PRICE CENTROID FIRST TIER------")
+print(mu_one)
+print("-----VARIANCE-----")
+print(var_one)
 second_samples = np.random.normal(mu_two, var_two, NUM_USERS)
+print("-----PRICE CENTROID SECOND TIER------")
+print(mu_two)
+print("-----VARIANCE-----")
+print(var_two)
 third_samples = np.random.normal(mu_three, var_three, NUM_USERS)
+print("-----PRICE CENTROID THIRD TIER------")
+print(mu_three)
+print("-----VARIANCE-----")
+print(var_three)
 
-user1 = User(0, [first_samples[0], second_samples[0], third_samples[0]], 2)
-user2 = User(3, [first_samples[1], second_samples[1], third_samples[1]], 3)
-user3 = User(2, [first_samples[2], second_samples[2], third_samples[2]], 3)
-user4 = User(0, [first_samples[3], second_samples[3], third_samples[3]], 2)
-user5 = User(4, [first_samples[4], second_samples[4], third_samples[4]], 1)
-user_list = [user1, user2, user3, user4, user5]
+# plotting distributions
+bins = np.linspace(-0.25, 3.25, NUM_USERS)
+
+pyplot.hist(first_samples, bins, alpha=0.5, normed=True, label='morning')
+
+# Empirical average and variance are computed
+avg = np.mean(first_samples)
+var = np.var(first_samples)
+# From that, we know the shape of the fitted Gaussian.
+pdf_x = np.linspace(np.min(first_samples),np.max(first_samples),NUM_USERS)
+pdf_y = 1.0/np.sqrt(2*np.pi*var)*np.exp(-0.5*(pdf_x-avg)**2/var)
+pyplot.plot(pdf_x,pdf_y,'b')
+
+pyplot.hist(second_samples, bins, alpha=0.5, normed=True, label='midday')
+
+# Empirical average and variance are computed
+avg = np.mean(second_samples)
+var = np.var(second_samples)
+# From that, we know the shape of the fitted Gaussian.
+pdf_x = np.linspace(np.min(second_samples),np.max(second_samples),NUM_USERS)
+pdf_y = 1.0/np.sqrt(2*np.pi*var)*np.exp(-0.5*(pdf_x-avg)**2/var)
+pyplot.plot(pdf_x,pdf_y,'tab:orange')
+
+pyplot.hist(third_samples, bins, alpha=0.5, normed=True, label='evening')
+
+# Empirical average and variance are computed
+avg = np.mean(third_samples)
+var = np.var(third_samples)
+# From that, we know the shape of the fitted Gaussian.
+pdf_x = np.linspace(np.min(third_samples),np.max(third_samples),NUM_USERS)
+pdf_y = 1.0/np.sqrt(2*np.pi*var)*np.exp(-0.5*(pdf_x-avg)**2/var)
+pyplot.plot(pdf_x,pdf_y,'g')
+pyplot.legend(loc='upper right')
+pyplot.show()
+
+user_list = [User(coefficients[i], [first_samples[i], second_samples[i], third_samples[i]], delays[i]) for i in range(NUM_USERS)]
