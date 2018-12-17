@@ -84,9 +84,9 @@ mu_three = mean(general_pred_price[192:])
 
 #var_one = variance(general_pred_price[:72])*5
 #var_two = variance(general_pred_price[72:208])*5
-var_three = mean(general_pred_price[192:])**2/NUM_USERS
-var_one = mean(general_pred_price[0:96])**2/NUM_USERS
-var_two = mean(general_pred_price[96:192])**2/NUM_USERS
+var_three = 0.3 #mean(general_pred_price[192:])**2/NUM_USERS
+var_one = 0.5# mean(general_pred_price[0:96])**2/NUM_USERS
+var_two = 0.9# mean(general_pred_price[96:192])**2/NUM_USERS
 #var_three = 0.5;
 
 first_samples = np.random.normal(mu_one, var_one, NUM_USERS)
