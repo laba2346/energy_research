@@ -32,6 +32,7 @@ def main():
     ax2.set_ylabel('price')
     ax2.plot(t, act_price, color=color1, label='Actual Cost')
     ax2.plot(t, sell_price, color=color3, dashes=[6, 2], label='sell Price')
+    ax2.plot(t, pred_price, color=color2, dashes=[5, 3], label='pred_Cost')
     ax2.legend(loc="upper left")
 
     ax3.set_xlabel('time (5 minute intervals)')
