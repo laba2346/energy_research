@@ -92,7 +92,7 @@ def simulate():
         pred_load = act_load[t-1] if t > 0 else calc_pred_load(t)
         desired_load = calc_pred_load(t)
         pred_generation = act_gen[t-1] if t > 0 else calc_pred_gen(t)
-        pred_Pfr = max(0,(pred_generation - pred_load - 0.02 * 1187)) + min(0, (pred_generation - pred_load + 0.02 * 1187))
+        pred_Pfr = max(0,(pred_load-desired_load - 0.02 * 1187)) + min(0, (pred_load - desired_load + 0.02 * 1187))
         AP_pred = (2*pred_Pfr*a + b)/4000
         pred_price = (2 * a * pred_load + b) / 4000 + pred_Pfr * AP_pred
         # If we are beyond the first time step and have data for act_price,
@@ -132,13 +132,14 @@ def simulate():
             # Wind is added here as a disturbance. set to zero to ignore
             wind = wind_data(t)
             #wind = 0
-            act_gen.append(pred_load + wind)
+            act_gen.append(desired_load + wind)
             act_load.append(total_load)
             prod_cost = (2*a*(total_load-wind) + b)/4000
-            Pfr = max(0, (total_load - pred_load - wind - 0.02 * 2125)) + min(0, (total_load - pred_load-wind + 0.02 * 2125))
-            ancillary_price = Pfr*0.10
-            sell_price.append(prod_cost+ancillary_price)
-            act_price.append((2*a*total_load + b)/4000 + ancillary_price)
+            Pfr = max(0, (total_load - desired_load - wind - 0.02 * 1187)) + min(0, (total_load - desired_load-wind + 0.02 * 1187))
+            ancillary_price = Pfr * 0.05
+            Pfr_price = (2*a*Pfr + b)/4000
+            sell_price.append(prod_cost+Pfr_price)
+            act_price.append((2*a*(total_load) + b)/4000 + ancillary_price)
         # If we are at the first time step, simply set the load and price to the
         # predicted values
         else:
