@@ -37,7 +37,7 @@ def main():
 
     ax3.set_xlabel('time (5 minute intervals)')
     ax3.set_ylabel('frequency (Hz)')
-    ax3.plot(t, 60 + 0.025*np.subtract(load, act_gen), color=color4)
+    ax3.plot(t, 60 - 0.02*np.subtract(load, act_gen), color=color4)
     ax3.legend(loc="upper left")
 
     fig.tight_layout()
@@ -89,12 +89,17 @@ def simulate():
 
 
     for t in range(0, day_pts):
-        pred_load = act_load[t-1] if t > 0 else calc_pred_load(t)
+        pred_load = act_load[t-1]if t > 0 else calc_pred_load(t)
         desired_load = calc_pred_load(t)
+        # d_load = calc_pred_load(t-1) if t > 0 else calc_pred_load(t)
+        #pred_load = max(pre_load, desired_load)
+        P = pred_load / 5
         pred_generation = act_gen[t-1] if t > 0 else calc_pred_gen(t)
-        pred_Pfr = max(0,(pred_load-desired_load - 0.02 * 1187)) + min(0, (pred_load - desired_load + 0.02 * 1187))
+        pred_gener = calc_pred_gen(t)
+        # pred_Pfr = 0
+        pred_Pfr = max(0, (pred_load-desired_load - 0.02 * P)) + min(0, (pred_load - desired_load + 0.02 * P))
         AP_pred = (2*pred_Pfr*a + b)/4000
-        pred_price = (2 * a * pred_load + b) / 4000 + pred_Pfr * AP_pred
+        pred_price = (2 * a * pred_load + b) / 4000 + AP_pred
         # If we are beyond the first time step and have data for act_price,
         # we can calculate the actual load of the system
         if(t > 0):
@@ -104,7 +109,7 @@ def simulate():
                 # price centroid, flag indicates if they are currently responding
                 # to price
                 d, centroid_list = user.getUserInfo()
-                e = centroid_list[int(t/96)]  # get which section of day we're in
+                e = centroid_list[int(t/72)]  # get which section of day we're in
                 user_pred_load = desired_load/NUM_USERS
                 # Pfr = max(0, (total_load - pred_load - wind - 0.02 * 2125)) + min(0, (total_load - pred_load - wind + 0.02 * 2125))
 
@@ -113,11 +118,11 @@ def simulate():
                     if(user.finishedResponding()):
                         user.reset()
 
-                if(abs(pred_price-e) > 0.75 and not user.is_responding):
+                if(abs(pred_price-e) > 0.45 and not user.is_responding):
                     user.is_responding = True
                     user.saved_load = d*user_pred_load*(pred_price-e)
 
-                flag = abs(pred_price-e) > 0.5
+                flag = abs(pred_price-e) > 0.15
                 user_load_t = user_pred_load - user.saved_load - flag*d*user_pred_load*(pred_price-e)/2
 
                 # Save the value at 119 right when the price warrants it, then user
@@ -132,14 +137,16 @@ def simulate():
             # Wind is added here as a disturbance. set to zero to ignore
             wind = wind_data(t)
             #wind = 0
+            D = desired_load/5
             act_gen.append(desired_load + wind)
             act_load.append(total_load)
             prod_cost = (2*a*(total_load-wind) + b)/4000
-            Pfr = max(0, (total_load - desired_load - wind - 0.02 * 1187)) + min(0, (total_load - desired_load-wind + 0.02 * 1187))
+            # Pfr = 0
+            Pfr = max(0, (total_load - desired_load - wind - 0.02 * D)) + min(0, (total_load - desired_load-wind + 0.02 * D))
             ancillary_price = Pfr * 0.05
             Pfr_price = (2*a*Pfr + b)/4000
-            sell_price.append(prod_cost+Pfr_price)
-            act_price.append((2*a*(total_load) + b)/4000 + ancillary_price)
+            sell_price.append((2*a*total_load + b)/4000+ancillary_price)
+            act_price.append(prod_cost + Pfr_price)
         # If we are at the first time step, simply set the load and price to the
         # predicted values
         else:
