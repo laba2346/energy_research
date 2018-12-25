@@ -28,7 +28,7 @@ class User:
         self.is_responding = False
         self.user_saved_load = 0
 
-NUM_USERS = 120
+NUM_USERS = 100
 
 # coefficients for marginal cost
 a = 10
@@ -36,7 +36,7 @@ b = 73
 c = 1
 
 coefficients = [randint(0, 5) for p in range(0, NUM_USERS)]
-delays = [randint(1, 5) for p in range(0, NUM_USERS)]
+delays = [randint(1, 15) for p in range(0, NUM_USERS)]
 
 #coefficients = [0, 3, 2, 0, 4]
 #centroids = [3, 2.5, 4, 3.5, 2]
@@ -78,16 +78,17 @@ general_pred_price = [(2*a*load - windData + b)/4000 for load in load_data for w
 
 day_pts = 288 # number of points in one day (288 = 5 min simulation steps)
 
-mu_one = mean(general_pred_price[:96])
-mu_two = mean(general_pred_price[96:192])
-mu_three = mean(general_pred_price[192:])
+mu_one = mean(general_pred_price[:70])
+mu_two = mean(general_pred_price[70:150])
+mu_three = mean(general_pred_price[150:200])
+mu_four = mean(general_pred_price[200:])
 
 #var_one = variance(general_pred_price[:72])*5
 #var_two = variance(general_pred_price[72:208])*5
-var_three = 0.3 #mean(general_pred_price[192:])**2/NUM_USERS
-var_one = 0.5# mean(general_pred_price[0:96])**2/NUM_USERS
-var_two = 0.9# mean(general_pred_price[96:192])**2/NUM_USERS
-#var_three = 0.5;
+var_one = 0.4   # mean(general_pred_price[0:96])**2/NUM_USERS
+var_two = 0.3    # mean(general_pred_price[96:192])**2/NUM_USERS
+var_three = 1  # mean(general_pred_price[192:])**2/NUM_USERS
+var_four = 0.5
 
 first_samples = np.random.normal(mu_one, var_one, NUM_USERS)
 print("-----PRICE CENTROID FIRST TIER------")
@@ -104,7 +105,7 @@ print("-----PRICE CENTROID THIRD TIER------")
 print(mu_three)
 print("-----VARIANCE-----")
 print(var_three)
-
+fourth_samples = np.random.normal(mu_four, var_four, NUM_USERS)
 # plotting distributions
 bins = np.linspace(-0.25, 3.25, NUM_USERS)
 
@@ -130,6 +131,15 @@ pyplot.plot(pdf_x,pdf_y,'tab:orange')
 
 pyplot.hist(third_samples, bins, alpha=0.5, normed=True, label='evening')
 
+avg = np.mean(fourth_samples)
+var = np.var(fourth_samples)
+# From that, we know the shape of the fitted Gaussian.
+pdf_x = np.linspace(np.min(fourth_samples), np.max(fourth_samples), NUM_USERS)
+pdf_y = 1.0/np.sqrt(2*np.pi*var)*np.exp(-0.5*(pdf_x-avg)**2/var)
+pyplot.plot(pdf_x,pdf_y,'y')
+
+pyplot.hist(fourth_samples, bins, alpha=0.5, normed=True, label='night')
+
 # Empirical average and variance are computed
 avg = np.mean(third_samples)
 var = np.var(third_samples)
@@ -140,4 +150,4 @@ pyplot.plot(pdf_x,pdf_y,'g')
 pyplot.legend(loc='upper right')
 pyplot.show()
 
-user_list = [User(coefficients[i], [first_samples[i], second_samples[i], third_samples[i]], delays[i]) for i in range(NUM_USERS)]
+user_list = [User(coefficients[i], [first_samples[i], second_samples[i], third_samples[i], fourth_samples[i]], delays[i]) for i in range(NUM_USERS)]
